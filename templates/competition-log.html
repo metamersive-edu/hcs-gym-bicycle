@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --primary-light: #ffebee;
+            --text: #1a1a1a;
+            --text-light: #666;
+            --bg: #f8f9fa;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --error: #f44336;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: #ff5252;
+            transform: translateY(-1px);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--text);
+        }
+
+        .record-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .record-selector {
+            flex: 1;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .export-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .export-button:hover:not(:disabled) {
+            background: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .export-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .record-dropdown {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--white);
+            font-size: 1rem;
+            color: var(--text);
+            appearance: none;
+            cursor: pointer;
+            padding-right: 2.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .record-dropdown:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+        }
+
+        .select-wrapper i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        .leaderboard-container {
+            width: 100%;
+        }
+
+        .leaderboard {
+            width: 100%;
+            background: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .leaderboard h2 {
+            font-size: 1.4rem;
+            margin: 0;
+            padding: 1.5rem;
+            color: var(--text);
+            background-color: var(--primary-light);
+            border-bottom: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 107, 107, 0.05);
+        }
+
+        .energy-cell {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .duration-cell {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .record-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .record-selector {
+                max-width: 100%;
+            }
+            
+            .export-button, .record-dropdown {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+            <h1>Leaderboard</h1>
+            <div></div> <!-- Empty div for flex spacing -->
+        </div>
+
+<div class="record-actions">
+  <button id="prevRace" class="back-button" disabled>
+    <i class="fas fa-arrow-left"></i>
+    Previous Race
+  </button>
+
+  <div class="record-selector">
+    <div class="select-wrapper">
+      <select id="recordType" class="record-dropdown" disabled>
+        <!-- options will be injected dynamically -->
+      </select>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </div>
+
+  <button id="nextRace" class="back-button" disabled>
+    Next Race
+    <i class="fas fa-arrow-right"></i>
+  </button>
+
+  <button id="exportCsv" class="export-button" disabled>
+    <i class="fas fa-file-export"></i>
+    Export to CSV
+  </button>
+</div>
+
+        <div class="leaderboard-container">
+            <div class="leaderboard">
+                <h2>Competition Leaderboard</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Duration</th>
+                            <th>Date</th>
+                            <th>Energy (Wh)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allCompetitionsBody">
+                        <tr>
+                            <td colspan="5" class="no-data">Loading competition data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+<script>
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  function populateTable(containerId, data, columns) {
+    const tbody = document.getElementById(containerId);
+    if (!tbody) return;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="${columns.length + 1}" class="no-data">No records available</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map((item, idx) => {
+      let row = `<tr><td>${idx + 1}</td>`;
+      columns.forEach(col => {
+        const v = item[col.key] || '';
+        row += `<td class="${col.class || ''}">${v}</td>`;
+      });
+      return row + '</tr>';
+    }).join('');
+  }
+
+  function convertToCSV(data, columns) {
+    const headers = ['Rank', ...columns.map(c => c.header)];
+    const rows = data.map((item, i) => {
+      const cells = [i + 1];
+      columns.forEach(col => {
+        let v = item[col.key] || '';
+        if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) {
+          v = `"${v.replace(/"/g, '""')}"`;
+        }
+        cells.push(v);
+      });
+      return cells.join(',');
+    });
+    return [headers.join(','), ...rows].join('\n');
+  }
+
+  function downloadCSV(csv, filename) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  }
+
+  function durationToSeconds(dur) {
+    if (!dur) return 0;
+    const [m, s] = String(dur).split(':').map(Number);
+    return (m * 60) + (s || 0);
+  }
+
+  function parseEnergy(e) {
+    if (!e) return 0;
+    return parseFloat(String(e).replace(' Wh','')) || 0;
+  }
+
+  // ─── State & Navigation ───────────────────────────────────────────────────
+
+  let raceTimestamps   = [];
+  let recordsByRace    = {};
+  let currentRaceIndex = 0;
+
+  function updateNavigationButtons() {
+    document.getElementById('prevRace').disabled = currentRaceIndex >= raceTimestamps.length - 1;
+    document.getElementById('nextRace').disabled = currentRaceIndex <= 0;
+  }
+
+  function updateTableForRace(idx) {
+    const ts = raceTimestamps[idx];
+    populateTable('allCompetitionsBody', recordsByRace[ts], currentColumns);
+    document.getElementById('recordType').value = ts;
+    updateNavigationButtons();
+  }
+
+  // ─── Main ───────────────────────────────────────────────────────────────────
+
+  // must match your column‐defs
+  const currentColumns = [
+    { key: 'name',      header: 'Name'     },
+    { key: 'duration',  header: 'Duration' },
+    { key: 'timestamp', header: 'Date'     },
+    { key: 'energy',    header: 'Energy (Wh)' }
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const exportBtn = document.getElementById('exportCsv');
+    const prevBtn   = document.getElementById('prevRace');
+    const nextBtn   = document.getElementById('nextRace');
+    const recordSel = document.getElementById('recordType');
+    const tbody      = document.getElementById('allCompetitionsBody');
+
+    fetch('/api/competition_leaderboard')
+      .then(res => res.ok ? res.json() : Promise.reject(res.status))
+      .then(data => {
+        // 1) collect & sort timestamps (newest first)
+        raceTimestamps = Array.from(
+          new Set(data.map(r => r.timestamp))
+        ).sort((a, b) => new Date(b) - new Date(a));
+
+        // 2) group rows
+        raceTimestamps.forEach(ts => {
+          recordsByRace[ts] = data.filter(r => r.timestamp === ts);
+        });
+
+        // 3) build dropdown
+        recordSel.innerHTML = '';
+        raceTimestamps.forEach(ts => {
+          const label = new Date(ts).toLocaleString();
+          recordSel.add(new Option(label, ts));
+        });
+        recordSel.disabled = false;
+        exportBtn.disabled = false;
+        prevBtn.disabled   = false;
+        nextBtn.disabled   = false;
+
+        // 4) show the latest race
+        currentRaceIndex = 0;
+        updateTableForRace(0);
+
+        // 5) wire controls
+        recordSel.addEventListener('change', () => {
+          currentRaceIndex = raceTimestamps.indexOf(recordSel.value);
+          updateTableForRace(currentRaceIndex);
+        });
+        prevBtn.addEventListener('click', () => {
+          if (currentRaceIndex < raceTimestamps.length - 1) {
+            currentRaceIndex++;
+            updateTableForRace(currentRaceIndex);
+          }
+        });
+        nextBtn.addEventListener('click', () => {
+          if (currentRaceIndex > 0) {
+            currentRaceIndex--;
+            updateTableForRace(currentRaceIndex);
+          }
+        });
+        exportBtn.addEventListener('click', () => {
+          const rows = recordsByRace[raceTimestamps[currentRaceIndex]];
+          const csv  = convertToCSV(rows, currentColumns);
+          const date = raceTimestamps[currentRaceIndex].slice(0,10);
+          downloadCSV(csv, `competition_${date}.csv`);
+        });
+      })
+      .catch(err => {
+        console.error('Error loading data:', err);
+        tbody.innerHTML = `
+          <tr><td colspan="${currentColumns.length+1}" class="no-data">
+            Error loading data: ${err.message || err}
+          </td></tr>`;
+      });
+  });
+</script>
+
+
+</body>
+</html>
